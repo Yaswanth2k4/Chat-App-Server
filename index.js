@@ -18,21 +18,26 @@ const io=new socketIOServer(server,{
     }
 })
 
+const users=[];
+
 io.on("connection",(socket)=>{
     console.log(`User socket id ${socket.id}`)
-    socket.on("client-message",(message,room)=>{
+    socket.on("client-message",(message,name,room)=>{
         if(room=="")
         {
             socket.broadcast.emit("server-message",message)
         }
         else
         {
-            socket.broadcast.to(room).emit("server-message",message)
+            socket.broadcast.to(room).emit("server-message",message,name)
         }
     })
-    socket.on("join-room",(room,name,cb)=>{
+    socket.on("join-room",(room,name,uid,cb)=>{
         socket.join(room);
-        socket.broadcast.to(room).emit("server-joined",name);
+        users.push({name:name,uid:uid});
+        console.log(users);
+        socket.broadcast.to(room).emit("server-joined",users,name); //sending users info to all other users in the room
+        socket.emit("users",users) //sending the existing users info to the newly joined user
         cb(`you joined the room`)
     })
     socket.on("leave-room",(room,name)=>{
