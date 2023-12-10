@@ -18,7 +18,7 @@ const io=new socketIOServer(server,{
     }
 })
 
-const users=[];
+var users=[];
 
 io.on("connection",(socket)=>{
     console.log(`User socket id ${socket.id}`)
@@ -36,13 +36,16 @@ io.on("connection",(socket)=>{
         socket.join(room);
         users.push({name:name,uid:uid});
         console.log(users);
-        socket.broadcast.to(room).emit("server-joined",users,name); //sending users info to all other users in the room
+        const message=`${name} joined the room`
+        socket.broadcast.to(room).emit("server-joined",message,users); //sending users info to all other users in the room
         socket.emit("users",users) //sending the existing users info to the newly joined user
         cb(`you joined the room`)
     })
-    socket.on("leave-room",(room,name)=>{
+    socket.on("leave-room",(room,uid,name)=>{
         const message=`${name} left the room`
-        socket.broadcast.to(room).emit("server-left",message)
+        users=users.filter(user=>user.uid!==uid)
+        socket.broadcast.to(room).emit("server-left",message,users)
+        socket.disconnect();
     })
 })
 
