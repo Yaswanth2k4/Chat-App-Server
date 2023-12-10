@@ -14,7 +14,7 @@ dotenv.config()
 const server=http.createServer(app)
 const io=new socketIOServer(server,{
     cors:{
-        origin:[process.env.ORIGIN1,process.env.ORIGINADMIN]
+        origin:[process.env.ORIGIN1,process.env.ORIGIN2,process.env.ORIGINADMIN]
     }
 })
 
