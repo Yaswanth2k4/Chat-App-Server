@@ -48,7 +48,7 @@ router.post("/login", async(req,res)=>{
             }
             else
             {
-                res.status(401).json({"message":"wrong credentials, please try again"})
+                res.status(401).json({"message":"wrong password, please try again"})
             }
         })
     }
