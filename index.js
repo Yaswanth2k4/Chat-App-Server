@@ -18,10 +18,11 @@ const io=new socketIOServer(server,{
     }
 })
 
-var users=[];
+const roomUsers={};
 
 io.on("connection",(socket)=>{
     console.log(`User socket id ${socket.id}`)
+
     socket.on("client-message",(message,name,room)=>{
         if(room=="")
         {
@@ -32,20 +33,33 @@ io.on("connection",(socket)=>{
             socket.broadcast.to(room).emit("server-message",message,name)
         }
     })
-    socket.on("join-room",(room,name,uid,cb)=>{
+
+    socket.on("join-room",(room, name, uid, cb)=>{
         socket.join(room);
-        users.push({name:name,uid:uid});
-        console.log(users);
+        
+        if(!roomUsers[room])
+        {
+            roomUsers[room]=[]
+        }
+
+        roomUsers[room].push({name:name, uid:uid});
+        console.log(roomUsers[room]);
+        
         const message=`${name} joined the room`
-        socket.broadcast.to(room).emit("server-joined",message,users); //sending users info to all other users in the room
-        socket.emit("users",users) //sending the existing users info to the newly joined user
+        socket.broadcast.to(room).emit("server-joined",message,roomUsers[room]); //sending users info to all other users in the room
+        socket.emit("users",roomUsers[room]) //sending the existing users info to the newly joined user
         cb(`you joined the room`)
     })
-    socket.on("leave-room",(room,uid,name)=>{
-        const message=`${name} left the room`
-        users=users.filter(user=>user.uid!==uid)
-        socket.broadcast.to(room).emit("server-left",message,users)
-        socket.disconnect();
+
+    socket.on("leave-room",(room, uid, name)=>{
+        if(roomUsers[room])
+        {
+            const message=`${name} left the room`
+            roomUsers[room]=roomUsers[room].filter(user=>user.uid!==uid)
+            socket.broadcast.to(room).emit("server-left",message,roomUsers[room])
+            socket.leave(room);
+            socket.disconnect();
+        }
     })
 })
 
