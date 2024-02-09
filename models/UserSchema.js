@@ -12,21 +12,7 @@ const userSchema=new mongoose.Schema({
     password:{
         type:String,
         required:true,
-    },
-    chats:{
-        type:[{
-            client:Boolean,
-            message:String,
-            time:String,
-            isJoined:Boolean
-        }]
-    },
-    room:{
-        type:Number,
-    },
-    socketId:{
-        type:Number,
-    },
+    }
 })
 
 export default mongoose.model("User",userSchema)
